@@ -1,11 +1,7 @@
-import { useEffect } from 'react'
 import { useRouter } from 'next/router'
 import api from '../Api/api'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
-
-import { useDataset } from '../Shared/createDataset';
-import { userObject } from '../Shared/userObject';
 
 export default function Home() {
   const router = useRouter()
@@ -22,12 +18,6 @@ export default function Home() {
   const notifySuccess = (msg) => toast(msg, toastConfig);
   const notifyError = (msg) => toast.error(msg, toastConfig);
 
-  const [userData, setUserData] = useDataset(userObject);
-
-  useEffect(() => {
-    console.log(userData)
-  }, [userData])
-
   const handleAuth = (event) => {
     event.preventDefault()
 
@@ -38,10 +28,9 @@ export default function Home() {
 
     api.post('/users/auth', authUser)
       .then((data) => {
-        setUserData({
-          email: authUser.email
-        })
+        localStorage.setItem('email_user', authUser.email)
         localStorage.setItem('token', data.data.token)
+        api.defaults.headers.common = {'Authorization': `bearer ${data.data.token}`}
         notifySuccess("Autenticado com sucesso!");
         router.push('/providers')
       }).catch(() => {

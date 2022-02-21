@@ -1,16 +1,27 @@
-import { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import api from '../Api/api'
 import Template from '../Components/Template'
 import { Eye, Edit3, Trash2, X, Plus } from 'react-feather';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
+import checkUserAuth from '../helpers/checkUserAuth';
 
 import { Modal } from "react-bootstrap"
 
 import styles from '../styles/Providers.module.css'
 
 const Providers = () => {
-  api.defaults.headers.common = {'Authorization': `bearer ${localStorage.getItem('token')}`}
+  const router = useRouter()
+
+  useLayoutEffect(() => {
+    const email_user = localStorage.getItem('email_user')
+    const token = localStorage.getItem('token')
+    const isLogged = checkUserAuth(token, email_user)
+    if (!isLogged) {
+      router.push('/')
+    }
+  })
 
   const toastConfig = {
     position: "top-right",

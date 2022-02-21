@@ -1,16 +1,51 @@
-import { useEffect } from 'react';
-import { useDataset } from '../../Shared/createDataset';
-import { userObject } from '../../Shared/userObject';
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
+import { LogOut } from 'react-feather';
+import styles from '../../styles/Template.module.css'
+import { ToastContainer, toast } from 'react-toastify';
+import api from '../../Api/api';
 
 const Template = ({children}) => {
-    const [userData] = useDataset(userObject);
+    const toastConfig = {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      }
+      
+    const notifySuccess = (msg) => toast(msg, toastConfig);
+    const notifyError = (msg) => toast.error(msg, toastConfig);
 
-    useEffect(() => [
-        console.log(userData)
-    ], [userData])
+    const [emailUser, setEmailUser] = useState("")
+
+    const router = useRouter()
+
+    const logout = () => {
+        localStorage.removeItem("token")
+        localStorage.removeItem("email_user")
+        api.post('/users/auth/logout')
+            .then((data) => {
+                if (data.data.revoked) {
+                    notifySuccess("Deslogado com sucesso!")
+                    router.push('/')
+                }
+            }).catch(() => {
+                notifyError("Não deslogado, tente novamente.");
+              })
+    }
+
+    useEffect(() => {
+        if (typeof localStorage !== 'undefined') {
+            setEmailUser(localStorage.getItem("email_user"))
+        }
+    })
 
     return (
         <div className='container-fliud'>
+            <ToastContainer />
             <nav className="navbar navbar-expand-lg navbar-light bg-light">
                 <div className="container-fluid">
                     <a className="navbar-brand" href="#">FCamara - Tok&Stok</a>
@@ -21,7 +56,7 @@ const Template = ({children}) => {
                             </li>
                         </ul>
                         <div className="d-flex">
-                            {userData.email}
+                            {emailUser} <LogOut onClick={logout} className={styles.iconButton}/>
                         </div>
                     </div>
                 </div>
